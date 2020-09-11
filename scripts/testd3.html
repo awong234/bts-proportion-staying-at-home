@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang='en'>
+    <head>
+        <meta charset='utf-8'>
+        <title>Test D3</title>
+        <script type="text/javascript" src="../d3.js"></script>
+        <link rel='stylesheet' href='./style.css'>
+    </head>
+    <body>
+        <div id='container' class='flex-container'>
+            <div id='country_graphs'>
+                <h1 class='chart-title'>U.S. National Level</h1>
+                <div id='country-chart'></div>
+                <div id='state-select' class='flex-grid'>
+                </div>
+            </div>
+            <div id='state_graphs'>
+                <h1 class='chart-title'>U.S. State Level</h1>
+            </div>
+            <div id='county_graphs'>
+                <h1 class='chart-title'>U.S. County Level</h1>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+
+            var parseTime = d3.timeParse("%Y-%m-%d")
+
+            var country_parse = function(d) {
+                return {
+                    date: parseTime(d.date),
+                    population_staying_at_home:     +d.population_staying_at_home,
+                    population_not_staying_at_home: +d.population_not_staying_at_home,
+                    population_staying_at_home:     +d.population_staying_at_home,
+                    population_not_staying_at_home: +d.population_not_staying_at_home,
+                    number_of_trips:                +d.number_of_trips,
+                    number_of_trips_1:              +d.number_of_trips_1,
+                    number_of_trips_1_3:            +d.number_of_trips_1_3,
+                    number_of_trips_3_5:            +d.number_of_trips_3_5,
+                    number_of_trips_5_10:           +d.number_of_trips_5_10,
+                    number_of_trips_10_25:          +d.number_of_trips_10_25,
+                    number_of_trips_25_50:          +d.number_of_trips_25_50,
+                    number_of_trips_50_100:         +d.number_of_trips_50_100,
+                    number_of_trips_100_250:        +d.number_of_trips_100_250,
+                    number_of_trips_250_500:        +d.number_of_trips_250_500,
+                    number_of_trips_500:            +d.number_of_trips_500
+                }
+            }
+
+            padding = 60;
+            country_width = 800
+            country_height = 400
+
+            var svg_country = d3.select("#country-chart")
+                    .append("svg")
+                    // .attr("viewBox", `0 0 ${country_width} ${country_height}`)
+                    .attr("width", country_width)
+                    .attr("height", country_height)
+
+            //Country data
+            d3.csv("../output/country_data.csv", country_parse, function(dataset) {
+
+                var data = dataset
+
+                data.forEach( (v) => {
+                    v.pct = v["population_staying_at_home"] / (v['population_staying_at_home'] + v['population_not_staying_at_home'])
+                })
+
+                var startDate = d3.min(data, d => { return d.date });
+                var endDate = d3.max(data, d => { return d.date });
+
+                var xscale = d3.scaleTime()
+                    .domain([
+                        startDate,
+                        endDate
+                    ])
+                    .range([padding, country_width - padding]);
+
+                var yscale = d3.scaleLinear()
+                    .domain([d3.min(data, d => d.pct), d3.max(data, d => d.pct) * 1.1])
+                    .range([country_height - padding, 0]);
+
+                var xaxis = d3.axisBottom()
+                    .scale(xscale)
+                    .ticks(10);
+
+                var yaxis = d3.axisLeft()
+                    .scale(yscale)
+                    .ticks(2);
+
+                // svg_country.selectAll('circle')
+                //     .data(data)
+                //     .enter()
+                //     .append('circle')
+                //     .attr("class", "data-circle")
+                //     // .style("fill", "cyan")
+                //     .attr("cx", function (d) {
+                //         return xscale(d.date);
+                //     })
+                //     .attr("cy", function (d) {
+                //         return yscale(d.pct);
+                //     })
+                //     .attr("r", 1)
+
+                var line = d3.line()
+                    // .curve(d3.curveBasis)
+                    .x(function (d) { return xscale(d.date) })
+                    .y(function (d) { return yscale(d.pct) })
+
+
+                // Draw country line
+                svg_country.append('path')
+                    .datum(data)
+                    .attr('class', 'cline')
+                    .attr('d', line)
+
+                //Create axes
+                svg_country.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", "translate(0," + (country_height - padding) + ")")
+                    .call(xaxis);
+
+                svg_country.append("g")
+                    .attr("class", "axis")
+                    .attr("transform", "translate(" + padding + ",0)")
+                    .call(yaxis);
+
+                // var lines = document.getElementsByClassName('cline');
+
+                // var mouseG = svg_country.append("g")
+                //     .attr("class", "mouse-over-effects");
+
+                // mouseG.append("path") // this is the black vertical line to follow mouse
+                //     .attr("class", "mouse-line")
+                //     .style("stroke", "white")
+                //     .style("stroke-width", "1px")
+                //     .style("opacity", "0");
+
+                // var mousePerLine = mouseG.selectAll('.mouse-per-line')
+                //     .data(data)
+                //     .enter()
+                //     .append("g")
+                //     .attr("class", "mouse-per-line");
+
+                // mousePerLine.append("circle")
+                //     .attr("r", 7)
+                //     .style("stroke", "cyan")
+                //     .style("fill", "none")
+                //     .style("stroke-width", "1px")
+                //     .style("opacity", "0");
+
+                // mousePerLine.append("text")
+                //     .attr("transform", "translate(10,3)")
+                //     .style("color", "white");
+
+                // mouseG.append('svg:rect') // append a rect to catch mouse movements on canvas
+                // .attr('width', country_width) // can't catch mouse events on a g element
+                // .attr('height', country_height)
+                // .attr('fill', 'none')
+                // .attr('pointer-events', 'all')
+                // .on('mouseout', function () { // on mouse out hide line, circles and text
+                //     d3.select(".mouse-line")
+                //         .style("opacity", "0");
+                //     d3.selectAll(".mouse-per-line circle")
+                //         .style("opacity", "0");
+                //     d3.selectAll(".mouse-per-line text")
+                //         .style("opacity", "0");
+                // })
+                // .on('mouseover', function () { // on mouse in show line, circles and text
+                //     d3.select(".mouse-line")
+                //         .style("opacity", "1");
+                //     d3.selectAll(".mouse-per-line circle")
+                //         .style("opacity", "1");
+                //     d3.selectAll(".mouse-per-line text")
+                //         .style("opacity", "1");
+                // })
+                // .on('mousemove', function () { // mouse moving over canvas
+                //     var mouse = d3.mouse(this);
+                //     d3.select(".mouse-line")
+                //         .attr("d", function () {
+                //             var d = "M" + mouse[0] + "," + country_height;
+                //             d += " " + mouse[0] + "," + 0;
+                //             return d;
+                //         });
+
+                //     d3.selectAll(".mouse-per-line")
+                //         .attr("transform", function (d, i) {
+                //             console.log(country_width / mouse[0])
+                //             var xDate = xscale.invert(mouse[0]),
+                //                 bisect = d3.bisector(function (d) { return d.date; }).right;
+                //             idx = bisect(d.pct, xDate);
+
+                //             var beginning = 0,
+                //                 end = lines[i].getTotalLength(),
+                //                 target = null;
+
+                //             while (true) {
+                //                 target = Math.floor((beginning + end) / 2);
+                //                 pos = lines[i].getPointAtLength(target);
+                //                 if ((target === end || target === beginning) && pos.x !== mouse[0]) {
+                //                     break;
+                //                 }
+                //                 if (pos.x > mouse[0]) end = target;
+                //                 else if (pos.x < mouse[0]) beginning = target;
+                //                 else break; //position found
+                //             }
+
+                //             d3.select(this).select('text')
+                //                 .text(yscale.invert(pos.y).toFixed(2));
+
+                //             return "translate(" + mouse[0] + "," + pos.y + ")";
+                //         });
+                // });
+            })
+
+
+            //State data. Need a separate graph for every single state.
+
+            var state_width = country_width;
+            var state_height = country_height;
+            var state_padding = 0;
+
+            var state_parse = function(d) {
+                return {
+                    date: parseTime(d.date),
+                    state_postal_code:              d.state_postal_code,
+                    population_staying_at_home:     +d.population_staying_at_home,
+                    population_not_staying_at_home: +d.population_not_staying_at_home,
+                    population_staying_at_home:     +d.population_staying_at_home,
+                    population_not_staying_at_home: +d.population_not_staying_at_home,
+                    number_of_trips:                +d.number_of_trips,
+                    number_of_trips_1:              +d.number_of_trips_1,
+                    number_of_trips_1_3:            +d.number_of_trips_1_3,
+                    number_of_trips_3_5:            +d.number_of_trips_3_5,
+                    number_of_trips_5_10:           +d.number_of_trips_5_10,
+                    number_of_trips_10_25:          +d.number_of_trips_10_25,
+                    number_of_trips_25_50:          +d.number_of_trips_25_50,
+                    number_of_trips_50_100:         +d.number_of_trips_50_100,
+                    number_of_trips_100_250:        +d.number_of_trips_100_250,
+                    number_of_trips_250_500:        +d.number_of_trips_250_500,
+                    number_of_trips_500:            +d.number_of_trips_500
+                }
+            }
+
+
+            d3.json("../output/unique_states.json", function(d) {
+                var unq_states = d;
+
+                // Create state select buttons
+                d3.select("#state-select").selectAll("div")
+                    .data(unq_states)
+                    .enter()
+                    .append("div")
+                    .attr("class", "state-button")
+                    .style("margin", "10px 20px 10px 20px")
+                    .attr("id", function(d) {
+                        return 'state-div-' + d
+                    })
+                    .append("p")
+                    .text( d => d)
+                    .on('click', function(st) {
+                        d3.csv("../output/state_data.csv", state_parse, function (d) {
+                            // Erase any plot already there:
+                            console.log(st)
+                            var state_dataset = d.filter(d => d.state_postal_code === st);
+                            console.table(state_dataset.slice(0,10))
+                            var startDate = d3.min(state_dataset, d => { return d.date });
+                            var endDate = d3.max(state_dataset, d => { return d.date });
+
+                            state_dataset.forEach((d) => {
+                                d.pct = d.population_staying_at_home / (d.population_staying_at_home + d.population_not_staying_at_home)
+                            })
+
+                            // console.table(state_dataset.slice(0,10))
+                            county_filter = function (d) {
+                                return {
+                                    date: parseTime(d.date),
+                                    state_postal_code: d.state_postal_code,
+                                    county_name: d.county_name,
+                                    population_staying_at_home: +d.population_staying_at_home,
+                                    population_not_staying_at_home: +d.population_not_staying_at_home,
+                                    population_staying_at_home: +d.population_staying_at_home,
+                                    population_not_staying_at_home: +d.population_not_staying_at_home,
+                                    number_of_trips: +d.number_of_trips,
+                                    number_of_trips_1: +d.number_of_trips_1,
+                                    number_of_trips_1_3: +d.number_of_trips_1_3,
+                                    number_of_trips_3_5: +d.number_of_trips_3_5,
+                                    number_of_trips_5_10: +d.number_of_trips_5_10,
+                                    number_of_trips_10_25: +d.number_of_trips_10_25,
+                                    number_of_trips_25_50: +d.number_of_trips_25_50,
+                                    number_of_trips_50_100: +d.number_of_trips_50_100,
+                                    number_of_trips_100_250: +d.number_of_trips_100_250,
+                                    number_of_trips_250_500: +d.number_of_trips_250_500,
+                                    number_of_trips_500: +d.number_of_trips_500
+                                }
+                            }
+
+                            //Create the divs
+                            var svg_state = d3.select("#state_graphs")
+                                .append("svg")
+                                // .attr("viewbox", `0 0 ${state_width} ${state_height}`)
+                                .attr("width", state_width)
+                                .attr("height", state_height)
+                                .on("click", function (d) {
+                                    // HANDLE COUNTIES ////////////////////////////////////////////////
+                                    //////////////////////////////////////////////////////////////////
+                                    d3.csv("../output/" + st + "_data.csv", county_filter, function (d) {
+                                        //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+                                        // HANDLE COUNTIES \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+                                        var dataset = d;
+                                        console.log(dataset.slice(0, 10))
+                                        var unq_counties = new Set(dataset.map(d => d.county_name))
+                                        var unq_counties_array = Array.from(unq_counties)
+                                        var unq_counties_strp = []
+                                        Object.assign(unq_counties_strp, unq_counties_array)
+                                        for (x = 0; x < unq_counties_array.length; x++) {
+                                            unq_counties_strp[x] = unq_counties_strp[x].replace(/[^a-zA-Z]/g, "")
+                                        }
+                                        dataset.forEach(d => {
+                                            d.pct = d.population_staying_at_home / (d.population_staying_at_home + d.population_not_staying_at_home)
+                                        })
+
+                                        // Create the county divs
+                                        d3.select("#county_graphs")
+                                            .selectAll("div")
+                                            .data(unq_counties_array)
+                                            .enter()
+                                            .append("div")
+                                            .attr("id", function (i, d) {
+                                                return 'county-div-' + i
+                                            })
+                                            .append("p")
+                                            .text(d => d)
+
+                                        for (let cty in unq_counties) {
+                                            var svg_county = d3.select("#county-div-" + cty)
+                                        }
+                                    })
+                                });
+                            // Get state data
+                            st_filter = state_dataset.filter(d => d.state_postal_code === st)
+
+                            var xscale = d3.scaleTime()
+                                .domain([
+                                    startDate,
+                                    endDate
+                                ])
+                                .range([state_padding, state_width - state_padding]);
+
+                            var yscale = d3.scaleLinear()
+                                .domain([d3.min(st_filter, d => d.pct), d3.max(st_filter, d => d.pct) * 1.1])
+                                .range([state_height - state_padding, 0]);
+
+                            var xaxis = d3.axisBottom()
+                                .scale(xscale)
+                                .ticks(10);
+
+                            var yaxis = d3.axisLeft()
+                                .scale(yscale)
+                                .ticks(1);
+
+                            var line = d3.line()
+                                .x(function (d) { return xscale(d.date) })
+                                .y(function (d) { return yscale(d.pct) })
+
+                            // Draw state svg line
+                            svg_state.append('path')
+                                .datum(st_filter)
+                                .attr('class', 'stline')
+                                .attr('d', line)
+
+                            //Create axes
+                            svg_state.append("g")
+                                .attr("class", "axis")
+                                .attr("transform", "translate(0," + (state_height - state_padding) + ")")
+                                .call(xaxis);
+
+                            svg_state.append("g")
+                                .attr("class", "axis")
+                                .attr("transform", "translate(" + state_padding + ",0)")
+                                .call(yaxis);
+
+                        })
+                    })
+
+                var plot_state = function(err, d) {
+                    var state_dataset = d.filter(d => d.state_postal_code === st);
+                    console.table(state_dataset.slice(0, 10))
+                    var startDate = d3.min(state_dataset, d => { return d.date });
+                    var endDate = d3.max(state_dataset, d => { return d.date });
+
+                    state_dataset.forEach((d) => {
+                        d.pct = d.population_staying_at_home / (d.population_staying_at_home + d.population_not_staying_at_home)
+                    })
+
+                    // console.table(state_dataset.slice(0,10))
+                    county_filter = function (d) {
+                        return {
+                            date: parseTime(d.date),
+                            state_postal_code: d.state_postal_code,
+                            county_name: d.county_name,
+                            population_staying_at_home: +d.population_staying_at_home,
+                            population_not_staying_at_home: +d.population_not_staying_at_home,
+                            population_staying_at_home: +d.population_staying_at_home,
+                            population_not_staying_at_home: +d.population_not_staying_at_home,
+                            number_of_trips: +d.number_of_trips,
+                            number_of_trips_1: +d.number_of_trips_1,
+                            number_of_trips_1_3: +d.number_of_trips_1_3,
+                            number_of_trips_3_5: +d.number_of_trips_3_5,
+                            number_of_trips_5_10: +d.number_of_trips_5_10,
+                            number_of_trips_10_25: +d.number_of_trips_10_25,
+                            number_of_trips_25_50: +d.number_of_trips_25_50,
+                            number_of_trips_50_100: +d.number_of_trips_50_100,
+                            number_of_trips_100_250: +d.number_of_trips_100_250,
+                            number_of_trips_250_500: +d.number_of_trips_250_500,
+                            number_of_trips_500: +d.number_of_trips_500
+                        }
+                    }
+
+
+                    d3.select("#state_graphs")
+                        .append("h2")
+                        .text(st)
+
+                    //Create the divs
+                    var svg_state = d3.select("#state_graphs")
+                        .append("svg")
+                        // .attr("viewbox", `0 0 ${state_width} ${state_height}`)
+                        .attr("width", state_width)
+                        .attr("height", state_height)
+                        .on("click", function (d) {
+                            // HANDLE COUNTIES ////////////////////////////////////////////////
+                            //////////////////////////////////////////////////////////////////
+                            d3.csv("../output/" + st + "_data.csv", county_filter, function (d) {
+                                //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+                                // HANDLE COUNTIES \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+                                var dataset = d;
+                                console.log(dataset.slice(0, 10))
+                                var unq_counties = new Set(dataset.map(d => d.county_name))
+                                var unq_counties_array = Array.from(unq_counties)
+                                var unq_counties_strp = []
+                                Object.assign(unq_counties_strp, unq_counties_array)
+                                for (x = 0; x < unq_counties_array.length; x++) {
+                                    unq_counties_strp[x] = unq_counties_strp[x].replace(/[^a-zA-Z]/g, "")
+                                }
+                                dataset.forEach(d => {
+                                    d.pct = d.population_staying_at_home / (d.population_staying_at_home + d.population_not_staying_at_home)
+                                })
+
+                                // Create the county divs
+                                d3.select("#county_graphs")
+                                    .selectAll("div")
+                                    .data(unq_counties_array)
+                                    .enter()
+                                    .append("div")
+                                    .attr("id", function (i, d) {
+                                        return 'county-div-' + i
+                                    })
+                                    .append("p")
+                                    .text(d => d)
+
+                                for (let cty in unq_counties) {
+                                    var svg_county = d3.select("#county-div-" + cty)
+                                }
+                            })
+                        });
+                    // Get state data
+                    st_filter = state_dataset.filter(d => d.state_postal_code === st)
+
+                    var xscale = d3.scaleTime()
+                        .domain([
+                            startDate,
+                            endDate
+                        ])
+                        .range([state_padding, state_width - state_padding]);
+
+                    var yscale = d3.scaleLinear()
+                        .domain([d3.min(st_filter, d => d.pct), d3.max(st_filter, d => d.pct) * 1.1])
+                        .range([state_height - state_padding, 0]);
+
+                    var xaxis = d3.axisBottom()
+                        .scale(xscale)
+                        .ticks(10);
+
+                    var yaxis = d3.axisLeft()
+                        .scale(yscale)
+                        .ticks(1);
+
+                    var line = d3.line()
+                        .x(function (d) { return xscale(d.date) })
+                        .y(function (d) { return yscale(d.pct) })
+
+                    // Draw state svg line
+                    svg_state.append('path')
+                        .datum(st_filter)
+                        .attr('class', 'stline')
+                        .attr('d', line)
+
+                    //Create axes
+                    svg_state.append("g")
+                        .attr("class", "axis")
+                        .attr("transform", "translate(0," + (state_height - state_padding) + ")")
+                        .call(xaxis);
+
+                    svg_state.append("g")
+                        .attr("class", "axis")
+                        .attr("transform", "translate(" + state_padding + ",0)")
+                        .call(yaxis);
+
+
+                }
+
+                var st = "NY"
+
+                d3.csv("../output/state_data.csv", state_parse, plot_state)
+
+            })
+
+        </script>
+    </body>
+</html>
