@@ -9,10 +9,20 @@
     <body>
         <div id='container' class='flex-container'>
             <div>
-                <h1>Percent population staying at home</h1>
+                <h1>Proportion of population staying at home</h1>
                 <div id='params'>
                     <input type='radio' name="scaletype" value="full-scale">Fixed scale
                     <input type='radio' name="scaletype" value="zoom-scale" checked="true">Dynamic scale
+                </div>
+                <div>
+                    <p>
+                        When selecting a scale, re-select the state to activate
+                        the new scale for the state view. The country view will
+                        update automatically.
+                    </p>
+                    <p>
+                        Data source: <code>data.bts.gov/</code>, "Trips by Distance" dataset.
+                    </p>
                 </div>
             </div>
 
@@ -27,7 +37,7 @@
                 <div id='state_graphs'>
                     <h1 class='chart-title'>U.S. State Level</h1>
                 </div>
-                <div id='county_graphs'>
+                <div id='county_graphs' style="overflow-y: scroll; height:400px;">
                     <h1 class='chart-title'>U.S. County Level</h1>
                 </div>
             </div>

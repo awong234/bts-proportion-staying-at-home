@@ -30,6 +30,19 @@ body {
     pointer-events: none;
 }
 
+#county_graphs::-webkit-scrollbar {
+  width: 1em;
+}
+
+#county_graphs::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+#county_graphs::-webkit-scrollbar-thumb {
+  background-color: darkgrey;
+  outline: 1px solid slategrey;
+}
+
 #tooltip.hidden {
     display: none;
 }
