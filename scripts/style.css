@@ -1,0 +1,119 @@
+body {
+    background-color: #363636;
+    color: rgb(214, 214, 214);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.cline,
+.stline{
+    fill: none;
+    stroke: cyan;
+    stroke-width: 0.5;
+}
+
+.data-circle {
+    fill: rgb(135, 207, 207);
+}
+
+#tooltip {
+    position: absolute;
+    width: 200px;
+    height: auto;
+    padding: 10px;
+    background-color: white;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+    -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+    -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+}
+
+#tooltip.hidden {
+    display: none;
+}
+
+#tooltip p {
+    margin: 0;
+    font-family: sans-serif;
+    font-size: 16px;
+    line-height: 20px;
+}
+
+.flex-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+}
+
+.flex-container.vert {
+    flex-direction: column;
+}
+
+.flex-container.col {
+    flex-direction: column;
+    justify-content: stretch;
+    align-items: stretch;
+}
+
+
+.chart-title {
+    text-align: center;
+    font-weight: 100;
+}
+
+.county-title {
+    margin: 10px;
+}
+
+.flex-grid {
+    display:flex;
+    flex-wrap: wrap;
+}
+
+.state-button {
+    font-family: monospace;
+    background-color: rgb(31, 31, 31);
+    color: rgb(0, 255, 200);
+    padding: 0px 20px 0px 20px;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+    -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+    -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+}
+
+#state-select {
+    width: 800px
+}
+
+.xaxis text {
+    fill: rgb(164, 255, 255);
+}
+
+.xaxis line {
+    stroke: rgb(164, 255, 255);
+}
+
+.xaxis path {
+    stroke: rgb(164, 255, 255);
+}
+
+.yaxis text {
+    fill: rgb(164, 255, 255);
+}
+
+.yaxis line {
+    stroke: rgb(164, 255, 255);
+}
+
+.yaxis path {
+    stroke: rgb(164, 255, 255);
+}
+
+input[type='radio'] {
+    color: rgb(0, 255, 200);
+}
